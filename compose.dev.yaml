@@ -1,0 +1,20 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      target: development
+    command: ["go", "run", "./cmd/ember-backend-api-gateway/main.go"]
+    ports:
+      - "8080:8080"
+    networks:
+      - ember
+    volumes:
+      - .:/app
+    environment:
+      APP_NAME: API Gateway
+      APP_PREFORK: false
+      APP_LOG_LEVEL:
+
+networks:
+  ember:
+    external: true
