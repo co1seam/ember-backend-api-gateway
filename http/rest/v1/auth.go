@@ -35,11 +35,14 @@ func (h *Handler) verifyOtp(ctx *fiber.Ctx) error {
 	reqCtx := ctx.Context()
 
 	var req struct {
-		otp string `json:"otp"`
+		Otp string `json:"otp"`
+	}
+	if err := ctx.BodyParser(&req); err != nil {
+		return err
 	}
 
 	resp, err := rpc.AuthClient.VerifyOTP(reqCtx, &authv1.VerifyOTPRequest{
-		Otp: req.otp,
+		Otp: req.Otp,
 	})
 	if err != nil {
 		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
@@ -99,7 +102,22 @@ func (h *Handler) signOut(ctx *fiber.Ctx) error {
 }
 
 func (h *Handler) refresh(ctx *fiber.Ctx) error {
-	return ctx.Status(fiber.StatusOK).JSON("")
+	reqCtx := ctx.Context()
+	var req models.RefreshTokenRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	resp, err := rpc.AuthClient.RefreshToken(reqCtx, &authv1.RefreshTokenRequest{
+		RefreshToken: req.RefreshToken,
+	})
+	if err != nil {
+		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	h.createCookies(ctx, resp.RefreshToken, resp.AccessToken)
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
 
 func (h *Handler) createCookies(ctx *fiber.Ctx, refreshToken, accessToken string) {

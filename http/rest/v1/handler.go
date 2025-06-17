@@ -25,11 +25,21 @@ func (h *Handler) Routes(instance *fiber.App) *fiber.App {
 			auth.Post("/refresh", h.refresh)
 		}
 
-		protected := v1.Group("")
+		protected := v1.Group("", h.AuthMiddleware())
 		{
 			media := protected.Group("/media")
 			{
-				media.Post("/upload", h.uploadMedia)
+				media.Post("/", h.createMedia)
+				media.Get("/:id", h.getMedia)
+				media.Put("/:id", h.updateMedia)
+				media.Delete("/:id", h.deleteMedia)
+				media.Get("/", h.listMedia)
+
+				streaming := media.Group("/stream")
+				{
+					streaming.Post("/upload/", h.uploadFile)
+					streaming.Get("/download", h.downloadFile)
+				}
 			}
 		}
 	}

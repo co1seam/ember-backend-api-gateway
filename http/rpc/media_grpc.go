@@ -10,17 +10,20 @@ var (
 	mediaConn *grpc.ClientConn
 )
 
-var MediaClient mediav1.MediaClient
+var MediaClient mediav1.MediaServiceClient
 
 func NewMediaClient() error {
 	var err error
 
-	mediaConn, err = grpc.NewClient("media:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	mediaConn, err = grpc.NewClient("media:50052", grpc.WithDefaultCallOptions(
+		grpc.MaxCallRecvMsgSize(100*1024*1024),
+		grpc.MaxCallSendMsgSize(100*1024*1024),
+	), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
 
-	MediaClient = mediav1.NewMediaClient(mediaConn)
+	MediaClient = mediav1.NewMediaServiceClient(mediaConn)
 
 	return nil
 }

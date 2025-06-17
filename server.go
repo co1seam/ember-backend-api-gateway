@@ -16,6 +16,7 @@ func NewServer() *Server {
 			Prefork:     false,
 			JSONDecoder: json.Unmarshal,
 			JSONEncoder: json.Marshal,
+			BodyLimit:   100 * 1024 * 1024,
 		}),
 	}
 }

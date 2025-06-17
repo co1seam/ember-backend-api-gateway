@@ -8,6 +8,7 @@ import (
 	"github.com/co1seam/ember_backend_api_gateway/http/rest/v1"
 	"github.com/co1seam/ember_backend_api_gateway/http/rpc"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,9 +34,23 @@ func main() {
 		panic(err)
 	}
 
+	err = rpc.NewMediaClient()
+	if err != nil {
+		panic(err)
+	}
+
 	handler := v1.NewHandler()
 
 	server := ember_backend_api_gateway.NewServer()
+
+	server.Server.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:8080",
+		AllowMethods:     "GET, HEAD, OPTIONS",
+		AllowHeaders:     "Origin, Range, Accept, Content-Type",
+		ExposeHeaders:    "Content-Range, Content-Length, Accept-Ranges",
+		AllowCredentials: true,
+	}))
+
 	handler.Routes(server.Server)
 	if err := server.Run("8080"); err != nil {
 		log.Error(err)
